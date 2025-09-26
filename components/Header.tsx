@@ -79,6 +79,30 @@ export const Header: React.FC = () => {
           </div>
         </div>
 
+                {/* Middle: Search */}
+                <div className="flex-grow flex justify-center">
+                    <div className="relative flex items-center hidden md:flex w-full max-w-md">
+                        <SearchIcon
+                            className="absolute left-4 top-1/2 -translate-y-[25%] w-5 h-5 text-text-secondary"
+                        />
+                        <input
+                            type="text"
+                            placeholder="Search assets, collections..."
+                            className="bg-surface border border-secondary rounded-full pl-12 pr-4 py-3 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                        />
+                        <Button
+                            onClick={handleSearch}
+                            className="ml-2 px-5 py-2.5 rounded-full"
+                        >
+                            Search
+                        </Button>
+                    </div>
+                </div>
+
+
         {/* Right: Wallet */}
         <div className="flex items-center gap-5 shrink-0">
           {currentAccount ? (

@@ -1,53 +1,50 @@
-import React from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import ClubCard from "../components/ClubCard";
 import { Club } from "../types";
-import { ClubIcon } from "../components/icons/Icons";
 
-interface ClubCardProps {
-    club: Club;
-}
+const ClubsListPage: React.FC = () => {
+    const [clubs, setClubs] = useState<Club[]>([]);
+    const [loading, setLoading] = useState(true);
 
-const ClubCard: React.FC<ClubCardProps> = ({ club }) => {
-    const navigate = useNavigate();
+    useEffect(() => {
+        // Replace this with your real fetch call
+        const fetchClubs = async () => {
+            try {
+                // Example fetch
+                const res = await fetch("/api/clubs");
+                const data = await res.json();
 
-    const handleViewClub = () => {
-        navigate(`/clubs/${club.id}`);
-    };
+                // Make sure it's an array of valid clubs
+                const safeClubs = (data || [])
+                    .filter((c: any) => c && c.id && c.name);
+
+                setClubs(safeClubs);
+            } catch (error) {
+                console.error("Failed to fetch clubs", error);
+                setClubs([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchClubs();
+    }, []);
+
+    if (loading) {
+        return <div className="p-4">Loading clubs…</div>;
+    }
+
+    if (!clubs.length) {
+        return <div className="p-4 text-text-secondary">No clubs available.</div>;
+    }
 
     return (
-        <div
-            className="bg-surface rounded-lg overflow-hidden group cursor-pointer hover:shadow-lg transition-all focus:outline-none focus:ring-2 focus:ring-primary"
-            onClick={handleViewClub}
-            role="button"
-            tabIndex={0}
-            aria-label={`View details for ${club.name}`}
-            onKeyDown={(e) => e.key === "Enter" && handleViewClub()}
-        >
-            {/* Image */}
-            <div className="aspect-video overflow-hidden bg-muted">
-                <img
-                    src={club.imageUrl || "/placeholder-club.png"}
-                    alt={club.name || "Club image"}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                />
-            </div>
-
-            {/* Content */}
-            <div className="p-4">
-                <h3 className="text-lg font-bold text-text-primary truncate">
-                    {club.name || "Unnamed Club"}
-                </h3>
-                <p className="text-sm text-text-secondary mt-1 line-clamp-2">
-                    {club.description || "No description available."}
-                </p>
-                <div className="flex items-center text-sm text-text-secondary mt-4">
-                    <ClubIcon className="w-4 h-4 mr-2" />
-                    <span>{club.memberCount?.toLocaleString() ?? 0} Members</span>
-                </div>
-            </div>
+        <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
+            {clubs.map((club) => (
+                <ClubCard key={club.id} club={club} />
+            ))}
         </div>
     );
 };
 
-export default ClubCard;
+export default ClubsListPage;

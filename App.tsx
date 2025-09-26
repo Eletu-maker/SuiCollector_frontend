@@ -1,9 +1,9 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
-import { getFullnodeUrl } from "@mysten/sui.js/client";
+import { SuiClientProvider, WalletProvider, createNetworkConfig } from "@mysten/dapp-kit";
+import { getFullnodeUrl } from "@mysten/sui/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AppContextProvider, useAppContext } from "./contexts/AppContext";
+import { AppContextProvider } from "./contexts/AppContext";
 
 import { Header } from "./components/Header";
 import { ConnectWalletModal } from "./components/ConnectWalletModal";
@@ -17,29 +17,23 @@ import ClubsListPage from "./pages/ClubsListPage";
 import { ClubDetailPage } from "./pages/ClubDetailPage";
 import { AssetDetailPage } from "./pages/AssetDetailPage";
 import { EditProfilePage } from "./pages/EditProfilePage";
+import "@mysten/dapp-kit/dist/index.css";
 
 // Create a query client for React Query
 const queryClient = new QueryClient();
 
 // Sui network configuration
-const networks = {
+const { networkConfig } = createNetworkConfig({
     devnet: { url: getFullnodeUrl("devnet") },
     testnet: { url: getFullnodeUrl("testnet") },
     mainnet: { url: getFullnodeUrl("mainnet") },
-};
-
-/**
- * Protects routes that require authentication.
- */
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-    const { isAuthenticated } = useAppContext();
-    return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
-}
+    localnet: { url: getFullnodeUrl("localnet") },
+});
 
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
-            <SuiClientProvider networks={networks} defaultNetwork="devnet">
+            <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
                 <WalletProvider autoConnect>
                     <AppContextProvider>
                         <Router>
@@ -47,41 +41,13 @@ function App() {
                             <Routes>
                                 <Route path="/" element={<HomePage />} />
                                 <Route path="/marketplace" element={<MarketplacePage />} />
-                                <Route
-                                    path="/mint"
-                                    element={
-                                        <ProtectedRoute>
-                                            <CreateItemPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                                <Route
-                                    path="/profile"
-                                    element={
-                                        <ProtectedRoute>
-                                            <ProfilePage />
-                                        </ProtectedRoute>
-                                    }
-                                />
-                                <Route
-                                    path="/settings"
-                                    element={
-                                        <ProtectedRoute>
-                                            <SettingsPage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                <Route path="/mint" element={<CreateItemPage />} />
+                                <Route path="/profile" element={<ProfilePage />} />
+                                <Route path="/settings" element={<SettingsPage />} />
                                 <Route path="/clubs" element={<ClubsListPage />} />
                                 <Route path="/clubs/:id" element={<ClubDetailPage />} />
                                 <Route path="/asset/:id" element={<AssetDetailPage />} />
-                                <Route
-                                    path="/edit-profile"
-                                    element={
-                                        <ProtectedRoute>
-                                            <EditProfilePage />
-                                        </ProtectedRoute>
-                                    }
-                                />
+                                <Route path="/edit-profile" element={<EditProfilePage />} />
                                 <Route path="*" element={<Navigate to="/" replace />} />
                             </Routes>
                             <ConnectWalletModal />
