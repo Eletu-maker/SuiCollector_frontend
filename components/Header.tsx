@@ -56,7 +56,9 @@ export const Header: React.FC = () => {
                 {/* Middle: Search */}
                 <div className="flex-grow flex justify-center">
                     <div className="relative flex items-center hidden md:flex w-full max-w-md">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                        <SearchIcon
+                            className="absolute left-4 top-1/2 -translate-y-[25%] w-5 h-5 text-text-secondary"
+                        />
                         <input
                             type="text"
                             placeholder="Search assets, collections..."
