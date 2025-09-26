@@ -1,6 +1,8 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { WalletKitProvider } from "@mysten/wallet-kit";
+import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
+import { getFullnodeUrl } from "@mysten/sui.js/client";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppContextProvider, useAppContext } from "./contexts/AppContext";
 
 import { Header } from "./components/Header";
@@ -16,6 +18,16 @@ import { ClubDetailPage } from "./pages/ClubDetailPage";
 import { AssetDetailPage } from "./pages/AssetDetailPage";
 import { EditProfilePage } from "./pages/EditProfilePage";
 
+// Create a query client for React Query
+const queryClient = new QueryClient();
+
+// Sui network configuration
+const networks = {
+    devnet: { url: getFullnodeUrl("devnet") },
+    testnet: { url: getFullnodeUrl("testnet") },
+    mainnet: { url: getFullnodeUrl("mainnet") },
+};
+
 /**
  * Protects routes that require authentication.
  */
@@ -26,54 +38,58 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function App() {
     return (
-        <WalletKitProvider>
-            <AppContextProvider>
-                <Router>
-                    <Header />
-                    <Routes>
-                        <Route path="/" element={<HomePage />} />
-                        <Route path="/marketplace" element={<MarketplacePage />} />
-                        <Route
-                            path="/mint"
-                            element={
-                                <ProtectedRoute>
-                                    <CreateItemPage />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/profile"
-                            element={
-                                <ProtectedRoute>
-                                    <ProfilePage />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route
-                            path="/settings"
-                            element={
-                                <ProtectedRoute>
-                                    <SettingsPage />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route path="/clubs" element={<ClubsListPage />} />
-                        <Route path="/clubs/:id" element={<ClubDetailPage />} />
-                        <Route path="/asset/:id" element={<AssetDetailPage />} />
-                        <Route
-                            path="/edit-profile"
-                            element={
-                                <ProtectedRoute>
-                                    <EditProfilePage />
-                                </ProtectedRoute>
-                            }
-                        />
-                        <Route path="*" element={<Navigate to="/" replace />} />
-                    </Routes>
-                    <ConnectWalletModal />
-                </Router>
-            </AppContextProvider>
-        </WalletKitProvider>
+        <QueryClientProvider client={queryClient}>
+            <SuiClientProvider networks={networks} defaultNetwork="devnet">
+                <WalletProvider autoConnect>
+                    <AppContextProvider>
+                        <Router>
+                            <Header />
+                            <Routes>
+                                <Route path="/" element={<HomePage />} />
+                                <Route path="/marketplace" element={<MarketplacePage />} />
+                                <Route
+                                    path="/mint"
+                                    element={
+                                        <ProtectedRoute>
+                                            <CreateItemPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/profile"
+                                    element={
+                                        <ProtectedRoute>
+                                            <ProfilePage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route
+                                    path="/settings"
+                                    element={
+                                        <ProtectedRoute>
+                                            <SettingsPage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route path="/clubs" element={<ClubsListPage />} />
+                                <Route path="/clubs/:id" element={<ClubDetailPage />} />
+                                <Route path="/asset/:id" element={<AssetDetailPage />} />
+                                <Route
+                                    path="/edit-profile"
+                                    element={
+                                        <ProtectedRoute>
+                                            <EditProfilePage />
+                                        </ProtectedRoute>
+                                    }
+                                />
+                                <Route path="*" element={<Navigate to="/" replace />} />
+                            </Routes>
+                            <ConnectWalletModal />
+                        </Router>
+                    </AppContextProvider>
+                </WalletProvider>
+            </SuiClientProvider>
+        </QueryClientProvider>
     );
 }
 
