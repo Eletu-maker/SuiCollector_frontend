@@ -1,71 +1,106 @@
-import React from 'react';
-import { Page } from '../types';
-import { useAppContext } from '../contexts/AppContext';
-import { Button } from './Button';
-import { LogoIcon, SearchIcon, BellIcon } from './icons/Icons';
-
-const NavLink: React.FC<{ page: Page; children: React.ReactNode; }> = ({ page, children }) => {
-    const { currentPage, setCurrentPage } = useAppContext();
-    const isActive = currentPage === page;
-    return (
-        <button 
-            onClick={() => setCurrentPage(page)}
-            className={`px-3 py-2 text-sm font-medium rounded-md transition-colors ${isActive ? 'text-text-primary' : 'text-text-secondary hover:text-text-primary'}`}
-        >
-            {children}
-        </button>
-    );
-};
+import React, { useState } from "react";
+import { Button } from "./Button";
+import { LogoIcon, SearchIcon } from "./icons/Icons";
+import { useAppContext } from "@/contexts/AppContext";
+import {
+    useCurrentAccount,
+    useConnectWallet,
+    useDisconnectWallet,
+    useWallets,
+} from "@mysten/dapp-kit";
+import { Link, useNavigate } from "react-router-dom";
 
 export const Header: React.FC = () => {
-    const { isAuthenticated, openWalletModal, user, setCurrentPage } = useAppContext();
+    const { openWalletModal } = useAppContext();
+    const navigate = useNavigate();
 
-    const handleNav = (page: Page) => {
-        setCurrentPage(page);
+    // Wallet state from dapp-kit
+    const currentAccount = useCurrentAccount();
+    const { mutate: connect } = useConnectWallet();
+    const { mutate: disconnect } = useDisconnectWallet();
+    const wallets = useWallets();
+
+    const currentWallet = wallets.find((w) =>
+        w.accounts.some((acc) => acc.publicKey === currentAccount?.publicKey)
+    );
+
+    const [searchTerm, setSearchTerm] = useState("");
+
+    const handleExplore = () => {
+        if (currentAccount) {
+            navigate("/marketplace");
+        } else {
+            openWalletModal();
+            // Or connect(); if you prefer dapp-kit’s modal
+        }
+    };
+
+    const handleSearch = () => {
+        if (searchTerm.trim()) {
+            navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
+            setSearchTerm("");
+        }
     };
 
     return (
-        <header className="fixed top-0 left-0 right-0 bg-background/80 backdrop-blur-lg z-40">
-            <div className="max-w-screen-2xl mx-auto px-6 h-20 flex items-center justify-between border-b border-secondary">
-                <div className="flex items-center gap-8">
-                    <button onClick={() => handleNav(Page.Home)} className="flex items-center gap-2">
-                        <LogoIcon className="w-8 h-8"/>
-                        <span className="text-xl font-bold text-text-primary">SuiCollect</span>
-                    </button>
-                     <nav className="hidden md:flex items-center gap-2">
-                       <NavLink page={Page.Marketplace}>Explore</NavLink>
-                       <NavLink page={Page.MintNewAsset}>Create</NavLink>
-                       <NavLink page={Page.Clubs}>Clubs</NavLink>
-                    </nav>
-                </div>
+        <header className="fixed top-0 left-0 right-0 bg-background/90 backdrop-blur-xl z-50 shadow-lg">
+            <div className="max-w-screen-2xl mx-auto px-8 h-24 flex items-center border-b border-gray-700">
+                {/* Left: Logo */}
+                <Link to="/" className="flex items-center gap-3 shrink-0">
+                    <LogoIcon className="w-10 h-10 text-primary" />
+                    <span className="text-2xl font-extrabold text-text-primary">
+                        SuiCollect
+                    </span>
+                </Link>
 
-                <div className="flex items-center gap-4">
-                    <div className="relative hidden md:block">
-                        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
+                {/* Middle: Search */}
+                <div className="flex-grow flex justify-center">
+                    <div className="relative flex items-center hidden md:flex w-full max-w-md">
+                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-text-secondary" />
                         <input
                             type="text"
-                            placeholder="Search assets..."
-                            className="bg-surface border border-secondary rounded-lg pl-10 pr-4 py-2 w-64 text-sm focus:ring-primary focus:border-primary focus:outline-none"
+                            placeholder="Search assets, collections..."
+                            className="bg-surface border border-secondary rounded-full pl-12 pr-4 py-3 w-full"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                         />
+                        <Button
+                            onClick={handleSearch}
+                            className="ml-2 px-5 py-2.5 rounded-full"
+                        >
+                            Search
+                        </Button>
                     </div>
+                </div>
 
-                    {isAuthenticated && user ? (
-                        <div className="flex items-center gap-4">
-                            <button className="p-2 rounded-full hover:bg-surface text-text-secondary hover:text-text-primary transition-colors">
-                                <BellIcon className="w-6 h-6" />
-                            </button>
-                            <button onClick={() => handleNav(Page.Profile)} className="flex items-center gap-2">
-                                <img src={user.avatarUrl} alt="User" className="w-10 h-10 rounded-full" />
-                            </button>
+                {/* Right: Wallet */}
+                <div className="flex items-center gap-5 shrink-0">
+                    {currentAccount ? (
+                        <div className="flex items-center gap-4 bg-surface px-4 py-2 rounded-full shadow-md">
+                            <div className="flex flex-col text-left">
+                                <span className="text-sm font-semibold text-text-primary">
+                                    {currentWallet?.name || "Wallet"}
+                                </span>
+                                <span className="text-xs text-text-secondary">
+                                    {currentAccount.address.slice(0, 6)}...
+                                    {currentAccount.address.slice(-4)}
+                                </span>
+                            </div>
+                            <Button
+                                onClick={() => disconnect()}
+                                className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded-full"
+                            >
+                                Disconnect
+                            </Button>
                         </div>
                     ) : (
-                       <div className="flex items-center gap-4">
-                            <nav className="hidden md:flex items-center gap-2">
-                               <button onClick={openWalletModal} className="px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary">Activity</button>
-                               <button onClick={openWalletModal} className="px-3 py-2 text-sm font-medium text-text-secondary hover:text-text-primary">Docs</button>
-                            </nav>
-                           <Button onClick={openWalletModal}>Connect Wallet</Button>
-                       </div>
+                        <Button
+                            onClick={openWalletModal}
+                            className="px-6 py-3 rounded-full shadow-md"
+                        >
+                            Connect Wallet
+                        </Button>
                     )}
                 </div>
             </div>

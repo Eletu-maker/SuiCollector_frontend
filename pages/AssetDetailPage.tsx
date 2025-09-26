@@ -1,9 +1,20 @@
 import React, { useState } from 'react';
-import { useAppContext } from '../contexts/AppContext';
+import { useNavigate, useParams } from 'react-router-dom';
 import { MOCK_ASSETS, MOCK_CREATED_ASSETS, MOCK_MARKETPLACE_ASSETS, MOCK_PROVENANCE, MOCK_USER, MOCK_CLUBS } from '../constants';
-import { Page, Asset } from '../types';
+import { Asset } from '../types';
 import { Button } from '../components/Button';
 import { VerifiedIcon } from '../components/icons/Icons';
+
+// BackButton Component
+const BackButton: React.FC<{ onClick: () => void }> = ({ onClick }) => (
+    <button
+        onClick={onClick}
+        className="flex items-center gap-2 text-text-secondary hover:text-text-primary transition-colors mb-6"
+    >
+        <span className="text-lg">←</span>
+        <span>Back</span>
+    </button>
+);
 
 const BuyConfirmationModal: React.FC<{
     asset: Asset;
@@ -11,8 +22,14 @@ const BuyConfirmationModal: React.FC<{
     onCancel: () => void;
     isPurchasing: boolean;
 }> = ({ asset, onConfirm, onCancel, isPurchasing }) => (
-    <div className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4" onClick={onCancel}>
-        <div className="bg-surface rounded-lg p-6 max-w-sm w-full mx-auto animate-fade-in-scale" onClick={(e) => e.stopPropagation()}>
+    <div
+        className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 p-4"
+        onClick={onCancel}
+    >
+        <div
+            className="bg-surface rounded-lg p-6 max-w-sm w-full mx-auto animate-fade-in-scale"
+            onClick={(e) => e.stopPropagation()}
+        >
             <h2 className="text-xl font-bold">Confirm Purchase</h2>
             <p className="text-text-secondary mt-2 mb-4">You are about to buy "{asset.name}".</p>
             <div className="flex items-center space-x-4 bg-secondary/50 p-3 rounded-lg">
@@ -33,7 +50,9 @@ const BuyConfirmationModal: React.FC<{
                 </div>
             </div>
             <div className="flex gap-4 mt-6">
-                <Button variant="secondary" onClick={onCancel} className="w-full" disabled={isPurchasing}>Cancel</Button>
+                <Button variant="secondary" onClick={onCancel} className="w-full" disabled={isPurchasing}>
+                    Cancel
+                </Button>
                 <Button onClick={onConfirm} className="w-full" disabled={isPurchasing}>
                     {isPurchasing ? 'Processing...' : 'Confirm & Buy'}
                 </Button>
@@ -52,23 +71,25 @@ const BuyConfirmationModal: React.FC<{
 );
 
 export const AssetDetailPage: React.FC = () => {
-    const { assetId, setCurrentPage, isAuthenticated, openWalletModal } = useAppContext();
+    const navigate = useNavigate();
+    const { id } = useParams<{ id: string }>();
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [isPurchasing, setIsPurchasing] = useState(false);
-    
-    // Combine all asset sources to find the asset
-    const allAssets = [...MOCK_ASSETS, ...MOCK_CREATED_ASSETS, ...MOCK_MARKETPLACE_ASSETS, ...MOCK_CLUBS.flatMap(c => c.featuredAssets)];
-    const asset = allAssets.find(a => a.id === assetId);
-    const provenance = MOCK_PROVENANCE.find(p => p.assetId === assetId);
 
-    // This is a bit of a hack, in a real app the creator data would be linked
-    const creator = MOCK_USER; 
+    // Combine all asset sources to find the asset
+    const allAssets = [
+        ...MOCK_ASSETS,
+        ...MOCK_CREATED_ASSETS,
+        ...MOCK_MARKETPLACE_ASSETS,
+        ...MOCK_CLUBS.flatMap((c) => c.featuredAssets),
+    ];
+    const asset = allAssets.find((a) => a.id === id);
+    const provenance = MOCK_PROVENANCE.find((p) => p.assetId === id);
+
+    const creator = MOCK_USER; // placeholder creator data
 
     const handleBuyNowClick = () => {
-        if (!isAuthenticated) {
-            openWalletModal();
-            return;
-        }
+        // Replace this with actual auth/wallet logic later
         setShowConfirmModal(true);
     };
 
@@ -87,16 +108,28 @@ export const AssetDetailPage: React.FC = () => {
             <div className="pt-20 min-h-screen flex flex-col items-center justify-center text-center">
                 <h2 className="text-2xl font-bold">Asset not found</h2>
                 <p className="text-text-secondary mt-2">The asset you are looking for does not exist or has been moved.</p>
-                <Button onClick={() => setCurrentPage(Page.Marketplace)} className="mt-4">Back to Marketplace</Button>
+                <Button onClick={() => navigate('/marketplace')} className="mt-4">
+                    Back to Marketplace
+                </Button>
             </div>
         );
     }
 
     return (
         <div className="pt-20 min-h-screen">
-            {showConfirmModal && <BuyConfirmationModal asset={asset} onConfirm={handleConfirmPurchase} onCancel={() => setShowConfirmModal(false)} isPurchasing={isPurchasing} />}
+            {showConfirmModal && (
+                <BuyConfirmationModal
+                    asset={asset}
+                    onConfirm={handleConfirmPurchase}
+                    onCancel={() => setShowConfirmModal(false)}
+                    isPurchasing={isPurchasing}
+                />
+            )}
 
             <div className="max-w-screen-xl mx-auto px-6 py-12">
+                {/* Back Button */}
+                <BackButton onClick={() => navigate(-1)} />
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12 lg:gap-24">
                     {/* Left side: Image */}
                     <div>
@@ -109,7 +142,7 @@ export const AssetDetailPage: React.FC = () => {
                     <div>
                         <p className="text-primary font-semibold">{asset.category}</p>
                         <h1 className="text-4xl lg:text-5xl font-bold mt-2">{asset.name}</h1>
-                        
+
                         <div className="flex items-center space-x-4 mt-6">
                             <img src={creator.avatarUrl} alt={creator.displayName} className="w-12 h-12 rounded-full" />
                             <div>
@@ -123,14 +156,22 @@ export const AssetDetailPage: React.FC = () => {
 
                         <div className="mt-8 bg-surface p-6 rounded-lg border border-secondary">
                             <p className="text-sm text-text-secondary">Current Price</p>
-                            <p className="text-3xl font-bold text-primary">{asset.price ? `${asset.price} SUI` : 'Not for sale'}</p>
-                            {asset.price && <Button onClick={handleBuyNowClick} className="w-full mt-4 py-3 text-lg">Buy Now</Button>}
+                            <p className="text-3xl font-bold text-primary">
+                                {asset.price ? `${asset.price} SUI` : 'Not for sale'}
+                            </p>
+                            {asset.price && (
+                                <Button onClick={handleBuyNowClick} className="w-full mt-4 py-3 text-lg">
+                                    Buy Now
+                                </Button>
+                            )}
                         </div>
 
                         <div className="mt-8">
                             <h2 className="text-xl font-bold">Description</h2>
                             <p className="text-text-secondary mt-2 leading-relaxed">
-                                This is a placeholder description. In a real application, this would contain detailed information about the digital asset, its significance, and the story behind its creation. This masterpiece, "{asset.name}," was crafted with passion by {creator.displayName}.
+                                This is a placeholder description. In a real application, this would contain detailed
+                                information about the digital asset, its significance, and the story behind its creation.
+                                This masterpiece, "{asset.name}," was crafted with passion by {creator.displayName}.
                             </p>
                         </div>
 
@@ -138,7 +179,7 @@ export const AssetDetailPage: React.FC = () => {
                             <div className="mt-8">
                                 <h2 className="text-xl font-bold">Ownership History</h2>
                                 <div className="mt-4 space-y-3 text-sm border border-secondary rounded-lg p-4 bg-surface/50">
-                                     <div>
+                                    <div>
                                         <p className="font-semibold text-text-secondary">Current Owner</p>
                                         <p className="text-text-primary font-medium">{provenance.currentOwner}</p>
                                     </div>
@@ -146,7 +187,11 @@ export const AssetDetailPage: React.FC = () => {
                                         <div className="border-t border-secondary pt-3 mt-3">
                                             <p className="font-semibold text-text-secondary">Previous Owners</p>
                                             <ul className="list-disc list-inside text-text-secondary mt-1 space-y-1">
-                                                {provenance.previousOwners.map((owner, index) => <li key={index}><span className="text-text-primary">{owner}</span></li>)}
+                                                {provenance.previousOwners.map((owner, index) => (
+                                                    <li key={index}>
+                                                        <span className="text-text-primary">{owner}</span>
+                                                    </li>
+                                                ))}
                                             </ul>
                                         </div>
                                     )}

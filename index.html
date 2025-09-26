@@ -1,80 +1,85 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>SuiCollect</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <script>
-      // Immediately set theme from localStorage to prevent FOUC
-      if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-      } else {
-        document.documentElement.classList.remove('dark');
-      }
+<head>
+  <meta charset="UTF-8" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SuiCollect</title>
 
-      tailwind.config = {
-        darkMode: 'class', // Enable dark mode
-        theme: {
-          extend: {
-            colors: {
-              'background': 'var(--color-background)',
-              'surface': 'var(--color-surface)',
-              'primary': 'var(--color-primary)',
-              'primary-hover': 'var(--color-primary-hover)',
-              'secondary': 'var(--color-secondary)',
-              'text-primary': 'var(--color-text-primary)',
-              'text-secondary': 'var(--color-text-secondary)',
-            },
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
+  <!-- Tailwind -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+          href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+          rel="stylesheet"
+  />
+
+  <!-- Theme setup -->
+  <script>
+    if (
+            localStorage.theme === "dark" ||
+            (!("theme" in localStorage) &&
+                    window.matchMedia("(prefers-color-scheme: dark)").matches)
+    ) {
+      document.documentElement.classList.add("dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+    }
+
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            background: "var(--color-background)",
+            surface: "var(--color-surface)",
+            primary: "var(--color-primary)",
+            "primary-hover": "var(--color-primary-hover)",
+            secondary: "var(--color-secondary)",
+            "text-primary": "var(--color-text-primary)",
+            "text-secondary": "var(--color-text-secondary)",
+          },
+          fontFamily: {
+            sans: ["Inter", "sans-serif"],
           },
         },
-      }
-    </script>
-     <style type="text/css">
-      :root { /* Light Mode */
-        --color-primary: #1313ec;
-        --color-primary-hover: #4a4aff;
-        --color-background: #f6f6f8;
-        --color-surface: #ffffff;
-        --color-secondary: #eef0f2;
-        --color-text-primary: #111827;
-        --color-text-secondary: #6B7280;
-      }
-      .dark { /* Dark Mode */
-        --color-background: #101022;
-        --color-surface: #1c1c30;
-        --color-secondary: #30304a;
-        --color-text-primary: #f0f0f5;
-        --color-text-secondary: #a0a0b8;
-      }
-      body {
-        background-color: var(--color-background);
-        color: var(--color-text-primary);
-      }
-    </style>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/recharts/umd/Recharts.min.js"></script>
-  <script type="importmap">
-{
-  "imports": {
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.1.1/",
-    "react/": "https://aistudiocdn.com/react@^19.1.1/",
-    "react": "https://aistudiocdn.com/react@^19.1.1"
-  }
-}
-</script>
-<link rel="stylesheet" href="/index.css">
+      },
+    };
+  </script>
+
+  <!-- Light/Dark theme variables -->
+  <style>
+    :root {
+      --color-primary: #1313ec;
+      --color-primary-hover: #4a4aff;
+      --color-background: #f6f6f8;
+      --color-surface: #ffffff;
+      --color-secondary: #eef0f2;
+      --color-text-primary: #111827;
+      --color-text-secondary: #6b7280;
+    }
+    .dark {
+      --color-background: #101022;
+      --color-surface: #1c1c30;
+      --color-secondary: #30304a;
+      --color-text-primary: #f0f0f5;
+      --color-text-secondary: #a0a0b8;
+    }
+    body {
+      background-color: var(--color-background);
+      color: var(--color-text-primary);
+    }
+  </style>
+
+  <!-- Only your local app CSS -->
+  <link rel="stylesheet" href="/index.css" />
 </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-  </body>
+<body>
+<div id="root"></div>
+<!-- Use local React (via npm), not CDN -->
+<script type="module" src="/index.tsx"></script>
+</body>
 </html>

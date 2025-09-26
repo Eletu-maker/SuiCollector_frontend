@@ -3,6 +3,7 @@ import { AssetCard } from '../components/AssetCard';
 import { MOCK_MARKETPLACE_ASSETS } from '../constants';
 import { SearchIcon, ChevronDownIcon } from '../components/icons/Icons';
 import { Asset } from '../types';
+import { BackButton } from '../components/BackButton';
 
 const FilterDropdown: React.FC<{ label: string }> = ({ label }) => (
     <button className="flex items-center gap-2 px-4 py-2 bg-surface rounded-lg text-sm font-medium text-text-secondary hover:bg-secondary">
@@ -13,21 +14,20 @@ const FilterDropdown: React.FC<{ label: string }> = ({ label }) => (
 
 const AssetCardSkeleton: React.FC = () => (
     <div className="bg-surface rounded-lg overflow-hidden animate-pulse">
-      <div className="aspect-square bg-secondary"></div>
-      <div className="p-4">
-        <div className="h-4 bg-secondary rounded w-3/4 mb-2"></div>
-        <div className="h-3 bg-secondary rounded w-1/2"></div>
-         <div className="h-3 bg-secondary rounded w-1/3 mt-2"></div>
-      </div>
+        <div className="aspect-square bg-secondary"></div>
+        <div className="p-4">
+            <div className="h-4 bg-secondary rounded w-3/4 mb-2"></div>
+            <div className="h-3 bg-secondary rounded w-1/2"></div>
+            <div className="h-3 bg-secondary rounded w-1/3 mt-2"></div>
+        </div>
     </div>
 );
-
 
 export const MarketplacePage: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState('');
     const [assets, setAssets] = useState<Asset[]>([]);
     const [loading, setLoading] = useState(true);
-    
+
     useEffect(() => {
         // Simulate fetching data
         setLoading(true);
@@ -44,7 +44,10 @@ export const MarketplacePage: React.FC = () => {
     );
 
     return (
-        <div className="pt-20 min-h-screen">
+        <div className="pt-20 min-h-screen relative">
+            {/* Back button */}
+            <BackButton label="Back" />
+
             <div className="max-w-screen-2xl mx-auto px-6 py-8">
                 <header className="mb-8">
                     <div className="relative">

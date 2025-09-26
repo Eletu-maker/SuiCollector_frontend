@@ -1,54 +1,80 @@
-import React, { useEffect } from 'react';
-import { AppContextProvider, useAppContext } from './contexts/AppContext';
-import { Page } from './types';
-import { HomePage } from './pages/HomePage';
-import { Header } from './components/Header';
-import { ConnectWalletModal } from './components/ConnectWalletModal';
-import { MarketplacePage } from './pages/MarketplacePage';
-import { CreateItemPage } from './pages/CreateItemPage';
-import { ProfilePage } from './pages/ProfilePage';
-import { SettingsPage } from './pages/SettingsPage';
-import { ClubsListPage } from './pages/ClubsListPage';
-import { ClubDetailPage } from './pages/ClubDetailPage';
-import { AssetDetailPage } from './pages/AssetDetailPage';
-import { EditProfilePage } from './pages/EditProfilePage';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { WalletKitProvider } from "@mysten/wallet-kit";
+import { AppContextProvider, useAppContext } from "./contexts/AppContext";
 
-const PageRenderer: React.FC = () => {
-    const { currentPage, isAuthenticated, setCurrentPage, clubId } = useAppContext();
+import { Header } from "./components/Header";
+import { ConnectWalletModal } from "./components/ConnectWalletModal";
 
- 
-    switch (currentPage) {
-        case Page.Home:
-            return <HomePage />;
-        case Page.Profile:
-             return <ProfilePage />;
-        case Page.Marketplace:
-            return <MarketplacePage />;
-        case Page.MintNewAsset:
-            return <CreateItemPage />;
-        case Page.Settings:
-            return <SettingsPage />;
-        case Page.Clubs:
-            return <ClubsListPage />;
-        case Page.ClubDetail:
-            return clubId ? <ClubDetailPage clubId={clubId} /> : <ClubsListPage />;
-        case Page.AssetDetail:
-            return <AssetDetailPage />;
-        case Page.EditProfile:
-            return <EditProfilePage />;    
-        default:
-            return isAuthenticated ? <ProfilePage /> : <HomePage />;
-    }
+import { HomePage } from "./pages/HomePage";
+import { MarketplacePage } from "./pages/MarketplacePage";
+import { CreateItemPage } from "./pages/CreateItemPage";
+import { ProfilePage } from "./pages/ProfilePage";
+import { SettingsPage } from "./pages/SettingsPage";
+import ClubsListPage from "./pages/ClubsListPage";
+import { ClubDetailPage } from "./pages/ClubDetailPage";
+import { AssetDetailPage } from "./pages/AssetDetailPage";
+import { EditProfilePage } from "./pages/EditProfilePage";
+
+/**
+ * Protects routes that require authentication.
+ */
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+    const { isAuthenticated } = useAppContext();
+    return isAuthenticated ? <>{children}</> : <Navigate to="/" replace />;
 }
 
 function App() {
-  return (
-    <AppContextProvider>
-        <Header />
-        <PageRenderer />
-        <ConnectWalletModal />
-    </AppContextProvider>
-  );
+    return (
+        <WalletKitProvider>
+            <AppContextProvider>
+                <Router>
+                    <Header />
+                    <Routes>
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/marketplace" element={<MarketplacePage />} />
+                        <Route
+                            path="/mint"
+                            element={
+                                <ProtectedRoute>
+                                    <CreateItemPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/profile"
+                            element={
+                                <ProtectedRoute>
+                                    <ProfilePage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route
+                            path="/settings"
+                            element={
+                                <ProtectedRoute>
+                                    <SettingsPage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="/clubs" element={<ClubsListPage />} />
+                        <Route path="/clubs/:id" element={<ClubDetailPage />} />
+                        <Route path="/asset/:id" element={<AssetDetailPage />} />
+                        <Route
+                            path="/edit-profile"
+                            element={
+                                <ProtectedRoute>
+                                    <EditProfilePage />
+                                </ProtectedRoute>
+                            }
+                        />
+                        <Route path="*" element={<Navigate to="/" replace />} />
+                    </Routes>
+                    <ConnectWalletModal />
+                </Router>
+            </AppContextProvider>
+        </WalletKitProvider>
+    );
 }
 
 export default App;

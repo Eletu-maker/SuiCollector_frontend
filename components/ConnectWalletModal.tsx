@@ -1,55 +1,58 @@
-import React from 'react';
-import { Wallet } from '../types';
-import { useAppContext } from '../contexts/AppContext';
-import { Button } from './Button';
-import { SuiIcon, GoogleIcon } from './icons/Icons';
-
-const WalletIconGeneric: React.FC<{ name: string }> = ({ name }) => (
-    <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center text-text-primary font-bold">
-        {name.charAt(0)}
-    </div>
-);
-
-const MOCK_WALLETS: Omit<Wallet, 'status'>[] = [
-    { name: 'Suiet', icon: <SuiIcon className="w-10 h-10" />, recommended: true, address: '0x34...eFgh', balance: 4.56 },
-    { name: 'Ethos', icon: <WalletIconGeneric name="E"/>, popular: true, address: '0x56...iJkl', balance: 7.89 },
-    { name: 'Martian', icon: <WalletIconGeneric name="M"/>, address: '0x78...mNop', balance: 0.12 },
-    { name: 'Glass', icon: <WalletIconGeneric name="G"/>, address: '0x90...qRst', balance: 3.45 },
-];
+import React from "react";
+import {
+    useCurrentAccount,
+    useConnectWallet,
+    useDisconnectWallet,
+    useWallets,
+} from "@mysten/dapp-kit";
+import { Wallet } from "../types";
+import { useAppContext } from "../contexts/AppContext";
+import { Button } from "./Button";
+import { GoogleIcon } from "./icons/Icons";
 
 export const ConnectWalletModal: React.FC = () => {
-    const { isWalletModalOpen, closeWalletModal, connectWallet, wallet: connectedWallet } = useAppContext();
-    
+    const { isWalletModalOpen, closeWalletModal, connectWallet } = useAppContext();
+
+    // dapp-kit hooks
+    const currentAccount = useCurrentAccount();
+    const { mutate: connect } = useConnectWallet(); // Corrected: access 'mutate' for connect
+    const { mutate: disconnect } = useDisconnectWallet(); // Corrected: access 'mutate' for disconnect
+    const wallets = useWallets();
+
     if (!isWalletModalOpen) return null;
 
     const handleZkLogin = () => {
-        // Simulate zkLogin flow
         const zkWallet: Wallet = {
-            name: 'Google zkLogin',
-            address: '0xzk...Ggl',
-            balance: 0.0,
+            name: "Google zkLogin",
+            address: "0xzk...Ggl",
+            balance: 0,
             icon: <GoogleIcon className="w-6 h-6" />,
-            status: 'Connected',
+            status: "Connected",
         };
         connectWallet(zkWallet, true);
+        closeWalletModal();
     };
 
     return (
-        <div 
-            className="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 transition-opacity duration-300"
+        <div
+            className="fixed inset-0 bg-black/70 flex items-center justify-center z-50"
             onClick={closeWalletModal}
-            aria-modal="true"
             role="dialog"
+            aria-modal="true"
         >
-            <div 
-                className="bg-surface rounded-2xl p-8 w-full max-w-md transform transition-all duration-300 scale-95 opacity-0 animate-fade-in-scale"
+            <div
+                className="bg-surface rounded-2xl p-8 w-full max-w-md transform animate-fade-in-scale"
                 onClick={(e) => e.stopPropagation()}
-                style={{ animation: 'fadeInScale 0.3s forwards' }}
             >
-                <h2 className="text-2xl font-bold text-center text-text-primary">Connect Wallet</h2>
-                <p className="text-text-secondary text-center mt-2 mb-6">Choose your preferred wallet or sign in to continue.</p>
-                
+                <h2 className="text-2xl font-bold text-center text-text-primary">
+                    Connect Wallet
+                </h2>
+                <p className="text-text-secondary text-center mt-2 mb-6">
+                    Choose your preferred wallet or sign in to continue.
+                </p>
+
                 <div className="space-y-3">
+                    {/* zkLogin Option */}
                     <Button
                         variant="secondary"
                         className="w-full !justify-center flex items-center gap-3 py-3"
@@ -60,57 +63,71 @@ export const ConnectWalletModal: React.FC = () => {
                     </Button>
 
                     <div className="flex items-center text-xs text-text-secondary my-4">
-                        <div className="flex-grow border-t border-secondary"></div>
-                        <span className="flex-shrink mx-4">OR CONNECT WITH A WALLET</span>
-                        <div className="flex-grow border-t border-secondary"></div>
+                        <div className="flex-grow border-t border-secondary" />
+                        <span className="mx-4">OR CONNECT WITH A WALLET</span>
+                        <div className="flex-grow border-t border-secondary" />
                     </div>
 
-                    {MOCK_WALLETS.map((w) => {
-                        const isConnected = connectedWallet?.address === w.address;
+                    {/* Wallets from dapp-kit */}
+                    {wallets.map((w) => {
+                        const isConnected = currentAccount?.publicKey === w.accounts[0]?.publicKey;
                         return (
-                            <div 
-                                key={w.name} 
-                                className={`flex items-center p-4 rounded-lg transition-colors ${isConnected ? 'bg-primary/20 border border-primary' : 'bg-secondary/50 dark:bg-secondary/50 hover:bg-secondary'}`}
+                            <div
+                                key={w.name}
+                                className={`flex items-center p-4 rounded-lg border transition-colors ${
+                                    isConnected
+                                        ? "bg-primary/10 border-primary"
+                                        : "bg-surface hover:bg-secondary/40 border-transparent"
+                                }`}
                             >
-                                {w.icon}
+                                {w.icon && (
+                                    <img
+                                        src={w.icon}
+                                        alt={`${w.name} logo`}
+                                        className="w-10 h-10 rounded-full"
+                                    />
+                                )}
                                 <div className="ml-4 flex-grow">
                                     <h3 className="font-semibold text-text-primary">{w.name}</h3>
-                                    {isConnected ? (
-                                        <>
-                                            <p className="text-sm text-text-secondary">{w.address}</p>
-                                            <p className="text-sm text-text-secondary">{w.balance} SUI</p>
-                                        </>
-                                    ) : (
-                                       <div className="flex items-center space-x-2">
-                                            {w.recommended && <span className="text-xs bg-green-500/20 text-green-400 px-2 py-0.5 rounded-full">Recommended</span>}
-                                            {w.popular && <span className="text-xs bg-yellow-500/20 text-yellow-400 px-2 py-0.5 rounded-full">Popular</span>}
-                                       </div>
+                                    {isConnected && (
+                                        <p className="text-sm text-text-secondary">Connected</p>
                                     )}
                                 </div>
                                 {isConnected ? (
-                                    <div className="flex items-center text-green-400">
-                                        <span className="w-2.5 h-2.5 bg-green-400 rounded-full mr-2"></span>
-                                        Connected
-                                    </div>
+                                    <Button
+                                        variant="secondary"
+                                        className="px-3 py-1 text-xs"
+                                        onClick={() => disconnect()}
+                                    >
+                                        Disconnect
+                                    </Button>
                                 ) : (
-                                    <Button onClick={() => connectWallet({ ...w, status: 'Connected' })}>Connect</Button>
+                                    <Button
+                                        onClick={() => connect({ wallet: w })} // Corrected: pass wallet object to connect
+                                        className="px-4 py-2 text-sm"
+                                    >
+                                        Connect
+                                    </Button>
                                 )}
                             </div>
                         );
                     })}
                 </div>
-                
-                <button className="text-sm text-primary w-full text-center mt-6">Show more options</button>
+
+                <button className="text-sm text-primary w-full text-center mt-6">
+                    Show more options
+                </button>
             </div>
+
             <style>{`
-                @keyframes fadeInScale {
-                    from { transform: scale(0.95); opacity: 0; }
-                    to { transform: scale(1); opacity: 1; }
-                }
-                .animate-fade-in-scale {
-                    animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
-                }
-            `}</style>
+        @keyframes fadeInScale {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .animate-fade-in-scale {
+          animation: fadeInScale 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+      `}</style>
         </div>
     );
 };

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { MOCK_TRANSACTIONS, MOCK_PROVENANCE } from '../constants';
 import { Transaction, Provenance } from '../types';
 import { Button } from '../components/Button';
+import {BackButton} from "@/components/BackButton.tsx";
 
 const StatCard: React.FC<{ value: string; label: string; isLoading: boolean }> = ({ value, label, isLoading }) => (
     <div className="bg-surface p-6 rounded-lg">
@@ -244,6 +245,8 @@ export const PortfolioTrackerPage: React.FC = () => {
 
     return (
         <div className="space-y-8">
+            <BackButton label="Go Back" />
+
             {selectedProvenance && <ProvenanceDetailModal item={selectedProvenance} onClose={() => setSelectedProvenance(null)} />}
 
             <h1 className="text-3xl font-bold text-text-primary">Portfolio Overview</h1>

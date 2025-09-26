@@ -3,8 +3,9 @@ import { ProfileLayout } from '../components/DashboardLayout';
 import { useAppContext } from '../contexts/AppContext';
 import { AssetCard } from '../components/AssetCard';
 import { MOCK_ASSETS, MOCK_CREATED_ASSETS, MOCK_ACTIVITY_FEED } from '../constants';
-import { PortfolioTrackerPage } from './PortfolioTrackerPage'; // Re-using the content
+import { PortfolioTrackerPage } from './PortfolioTrackerPage';
 import { ActivityFeedItem } from '../types';
+import { BackButton } from '../components/BackButton'; // ✅ import
 
 const OwnedAssetsTab: React.FC = () => (
     <div>
@@ -30,12 +31,16 @@ const CreatedAssetsTab: React.FC = () => (
 
 const ActivityFeedTab: React.FC = () => {
     const renderActionText = (item: ActivityFeedItem) => {
-        switch(item.action) {
-            case 'minted': return <>minted <span className="font-bold text-text-primary">{item.asset.name}</span></>;
-            case 'purchased': return <>purchased <span className="font-bold text-text-primary">{item.asset.name}</span> for <span className="font-bold text-primary">{item.price} SUI</span></>;
-            case 'listed': return <>listed <span className="font-bold text-text-primary">{item.asset.name}</span> for <span className="font-bold text-primary">{item.price} SUI</span></>;
+        switch (item.action) {
+            case 'minted':
+                return <>minted <span className="font-bold text-text-primary">{item.asset.name}</span></>;
+            case 'purchased':
+                return <>purchased <span className="font-bold text-text-primary">{item.asset.name}</span> for <span className="font-bold text-primary">{item.price} SUI</span></>;
+            case 'listed':
+                return <>listed <span className="font-bold text-text-primary">{item.asset.name}</span> for <span className="font-bold text-primary">{item.price} SUI</span></>;
         }
-    }
+    };
+
     return (
         <div>
             <h1 className="text-3xl font-bold text-text-primary mb-6">Activity Feed</h1>
@@ -44,10 +49,10 @@ const ActivityFeedTab: React.FC = () => {
                     <div key={item.id} className="flex items-center p-4 bg-surface rounded-lg">
                         <img src={item.user.avatarUrl} alt={item.user.name} className="w-10 h-10 rounded-full" />
                         <div className="ml-4 flex-grow">
-                           <p className="text-sm">
+                            <p className="text-sm">
                                 <span className="font-bold text-text-primary">{item.user.name}</span> {renderActionText(item)}
-                           </p>
-                           <p className="text-xs text-text-secondary">{item.timestamp}</p>
+                            </p>
+                            <p className="text-xs text-text-secondary">{item.timestamp}</p>
                         </div>
                         <img src={item.asset.imageUrl} alt={item.asset.name} className="w-12 h-12 rounded-md" />
                     </div>
@@ -57,9 +62,9 @@ const ActivityFeedTab: React.FC = () => {
     );
 };
 
-
 export const ProfilePage: React.FC = () => {
-    const { currentProfileTab } = useAppContext();
+    const { currentProfileTab, user, wallet, disconnectWallet } = useAppContext();
+
 
     const renderTabContent = () => {
         switch (currentProfileTab) {
@@ -70,14 +75,19 @@ export const ProfilePage: React.FC = () => {
             case 'activity':
                 return <ActivityFeedTab />;
             case 'portfolio':
-                return <PortfolioTrackerPage />; // Render portfolio content
+                return <PortfolioTrackerPage />;
             default:
                 return <OwnedAssetsTab />;
         }
-    }
+    };
 
     return (
-        <ProfileLayout>
+        <ProfileLayout
+            user={user}
+            wallet={wallet}
+            disconnectWallet={disconnectWallet}
+        >
+            <BackButton label="Go Back" />
             {renderTabContent()}
         </ProfileLayout>
     );
