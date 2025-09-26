@@ -3,7 +3,7 @@ import {
     useCurrentAccount,
     useConnectWallet,
     useDisconnectWallet,
-    useWallets
+    useWallets, ConnectButton
 } from "@mysten/dapp-kit";
 import { Wallet } from "../types";
 import { useAppContext } from "../contexts/AppContext";
@@ -108,12 +108,13 @@ export const ConnectWalletModal: React.FC = () => {
                                         Disconnect
                                     </Button>
                                 ) : (
-                                    <Button
-                                        onClick={() => connect({ wallet: w })} // Corrected: pass wallet object to connect
-                                        className="px-4 py-2 text-sm"
-                                    >
-                                        Connect
-                                    </Button>
+                                    // <Button
+                                    //     onClick={() => connect({ wallet: w })} // Corrected: pass wallet object to connect
+                                    //     className="px-4 py-2 text-sm"
+                                    // >
+                                    //     Connect
+                                    // </Button>
+                                    <ConnectButton />
                                 )}
                             </div>
                         );

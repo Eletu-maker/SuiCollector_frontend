@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import { SuiClientProvider, WalletProvider } from "@mysten/dapp-kit";
-import { getFullnodeUrl } from "@mysten/sui.js/client";
+import { SuiClientProvider, WalletProvider, createNetworkConfig } from "@mysten/dapp-kit";
+import { getFullnodeUrl } from "@mysten/sui/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AppContextProvider, useAppContext } from "./contexts/AppContext";
 
@@ -17,16 +17,18 @@ import ClubsListPage from "./pages/ClubsListPage";
 import { ClubDetailPage } from "./pages/ClubDetailPage";
 import { AssetDetailPage } from "./pages/AssetDetailPage";
 import { EditProfilePage } from "./pages/EditProfilePage";
+import "@mysten/dapp-kit/dist/index.css"
 
 // Create a query client for React Query
 const queryClient = new QueryClient();
 
 // Sui network configuration
-const networks = {
+const { networkConfig } = createNetworkConfig({
     devnet: { url: getFullnodeUrl("devnet") },
     testnet: { url: getFullnodeUrl("testnet") },
     mainnet: { url: getFullnodeUrl("mainnet") },
-};
+    localnet: { url: getFullnodeUrl("localnet") },
+});
 
 /**
  * Protects routes that require authentication.
@@ -39,7 +41,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
-            <SuiClientProvider networks={networks} defaultNetwork="devnet">
+            <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
                 <WalletProvider autoConnect>
                     <AppContextProvider>
                         <Router>
