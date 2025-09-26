@@ -21,7 +21,7 @@ export const Header: React.FC = () => {
     const wallets = useWallets();
 
     const currentWallet = wallets.find((w) =>
-        w.accounts.some((acc) => acc.publicKey === currentAccount?.publicKey)
+        w.accounts.some((acc) => acc.address === currentAccount?.address)
     );
 
     const [searchTerm, setSearchTerm] = useState("");

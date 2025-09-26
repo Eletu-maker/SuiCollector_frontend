@@ -3,7 +3,7 @@ import {
     useCurrentAccount,
     useConnectWallet,
     useDisconnectWallet,
-    useWallets,
+    useWallets
 } from "@mysten/dapp-kit";
 import { Wallet } from "../types";
 import { useAppContext } from "../contexts/AppContext";
@@ -70,7 +70,7 @@ export const ConnectWalletModal: React.FC = () => {
 
                     {/* Wallets from dapp-kit */}
                     {wallets.map((w) => {
-                        const isConnected = currentAccount?.publicKey === w.accounts[0]?.publicKey;
+                        const isConnected = currentAccount && w.accounts.some(acc => acc.address === currentAccount.address);
                         return (
                             <div
                                 key={w.name}
@@ -80,13 +80,19 @@ export const ConnectWalletModal: React.FC = () => {
                                         : "bg-surface hover:bg-secondary/40 border-transparent"
                                 }`}
                             >
-                                {w.icon && (
-                                    <img
-                                        src={w.icon}
-                                        alt={`${w.name} logo`}
-                                        className="w-10 h-10 rounded-full"
-                                    />
-                                )}
+                                <div className="w-10 h-10 rounded-full bg-secondary flex items-center justify-center">
+                                    {w.icon ? (
+                                        <img
+                                            src={w.icon}
+                                            alt={`${w.name} logo`}
+                                            className="w-8 h-8 rounded-full"
+                                        />
+                                    ) : (
+                                        <span className="text-xs font-bold text-text-secondary">
+                                            {w.name.charAt(0)}
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="ml-4 flex-grow">
                                     <h3 className="font-semibold text-text-primary">{w.name}</h3>
                                     {isConnected && (
