@@ -169,9 +169,7 @@ export const AssetDetailPage: React.FC = () => {
                         <div className="mt-8">
                             <h2 className="text-xl font-bold">Description</h2>
                             <p className="text-text-secondary mt-2 leading-relaxed">
-                                This is a placeholder description. In a real application, this would contain detailed
-                                information about the digital asset, its significance, and the story behind its creation.
-                                This masterpiece, "{asset.name}," was crafted with passion by {creator.displayName}.
+                                {asset.description || 'No description provided for this asset.'}
                             </p>
                         </div>
 
