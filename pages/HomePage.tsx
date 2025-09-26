@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useInView } from "react-intersection-observer";
 import { Asset, Collection } from "../types";
@@ -7,7 +7,7 @@ import { Button } from "../components/Button";
 import { useAppContext } from "../contexts/AppContext";
 import CountUp from "react-countup";
 // @ts-ignore
-import image from "../asset/hero-bg.jpg";
+import image from "../assets/hero-bg.jpg";
 
 const StatCard: React.FC<{ value: number; label: string }> = ({ value, label }) => {
     const { ref, inView } = useInView({ triggerOnce: true, threshold: 0.3 });
@@ -72,10 +72,10 @@ const CategoryCard: React.FC<{ name: string; icon: string }> = ({ name, icon }) 
 );
 
 const HowItWorksStep: React.FC<{ step: number; title: string; description: string }> = ({
-                                                                                            step,
-                                                                                            title,
-                                                                                            description,
-                                                                                        }) => (
+    step,
+    title,
+    description,
+}) => (
     <div className="bg-surface p-6 rounded-xl shadow-md border border-gray-700">
         <div className="flex items-center mb-4">
             <div className="bg-primary text-white rounded-full h-10 w-10 flex items-center justify-center text-xl font-bold mr-4">
@@ -91,6 +91,8 @@ export const HomePage: React.FC = () => {
     const navigate = useNavigate();
     const { openWalletModal, isAuthenticated } = useAppContext();
 
+    const [showAllCollections, setShowAllCollections] = useState(false);
+
     const handleExplore = () => {
         if (isAuthenticated) {
             navigate("/marketplace");
@@ -102,12 +104,12 @@ export const HomePage: React.FC = () => {
     return (
         <div className="pt-20 bg-background min-h-screen text-text-primary">
             {/* Hero Section */}
-            <section className="relative h-[70vh] flex items-center justify-center text-center px-4 overflow-hidden">
+            <section className="relative h-[90vh] flex items-center justify-center text-center px-4 mx-8 mt-4 md:mx-10 md:mt-8 rounded-2xl overflow-hidden">
                 <div className="absolute inset-0 bg-black/60 dark:bg-black/70 z-0"></div>
                 <img
                     src={image}
                     alt="Background of diverse digital collectibles"
-                    className="absolute inset-0 w-full h-full object-cover -z-10 animate-fade-in-slow"
+                    className="absolute inset-0 w-full h-full object-fill animate-fade-in-slow"
                 />
                 <div className="relative z-10 max-w-4xl mx-auto">
                     <h1 className="text-5xl md:text-7xl font-extrabold tracking-tight text-white leading-tight drop-shadow-lg">
@@ -156,15 +158,18 @@ export const HomePage: React.FC = () => {
             {/* Featured Collections */}
             <section className="max-w-screen-xl mx-auto py-20 px-6">
                 <div className="flex flex-col md:flex-row items-center justify-between mb-12">
-                    <h2 className="text-4xl font-bold mb-6 md:mb-0">Top Collections This Week</h2>
-                    <Link to="/collections">
-                        <Button className="px-8 py-3 text-base rounded-full shadow-md hover:scale-105 transition-transform duration-300 bg-secondary hover:bg-secondary-dark">
-                            View All Collections
-                        </Button>
-                    </Link>
+                    <h2 className="text-4xl font-bold mb-6 md:mb-0">
+                        {showAllCollections ? "All Collections" : "Top Collections This Week"}
+                    </h2>
+                    <Button
+                        onClick={() => setShowAllCollections((prev) => !prev)}
+                        className="px-8 py-3 text-base rounded-full shadow-md hover:scale-105 transition-transform duration-300 bg-secondary hover:bg-secondary-dark"
+                    >
+                        {showAllCollections ? "Show Less" : "View All Collections"}
+                    </Button>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-                    {MOCK_COLLECTIONS.slice(0, 3).map((collection) => (
+                    {(showAllCollections ? MOCK_COLLECTIONS : MOCK_COLLECTIONS.slice(0, 3)).map((collection) => (
                         <CollectionCard key={collection.id} collection={collection} />
                     ))}
                 </div>
