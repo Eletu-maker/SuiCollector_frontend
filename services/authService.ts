@@ -1,28 +1,38 @@
-// src/services/authService.ts
-export interface User {
-    id: string;
-    name: string;
-    avatarUrl: string;
+// services/authService.ts
+import { User } from "../types"; // adjust the path if needed
+
+function generateNonce(): string {
+    // use a cryptographically safe random string for real apps
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
 }
 
-export async function loginWithGoogle(idToken: string): Promise<User> {
-    const res = await fetch("http://localhost:8000/users/zklogin", {
+export const startZkLogin = async (): Promise<void> => {
+    const clientId =
+        "31415212217-606mri9r2adon27kj4cse957e5natmnj.apps.googleusercontent.com"; // 👈 needs to be a string
+
+    const nonce = generateNonce();
+    window.localStorage.setItem("zk_login_nonce", nonce);
+
+    const params = new URLSearchParams({
+        client_id: clientId,
+        redirect_uri: window.location.origin + "/auth/callback",
+        response_type: "id_token",
+        scope: "openid email profile",
+        nonce: nonce,
+    });
+
+    window.location.href = `https://accounts.google.com/o/oauth2/v2/auth?${params}`;
+};
+
+export const loginWithZk = async (
+    idToken: string
+): Promise<{ user: User }> => {
+    const response = await fetch("/api/zklogin/verify", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
-        credentials: "include",
     });
 
-    if (!res.ok) throw new Error("Login failed");
-    return res.json();
-}
-
-export async function logout(): Promise<void> {
-    await fetch("http://localhost:8000/logout", { method: "POST", credentials: "include" });
-}
-
-export async function getCurrentUser(): Promise<User | null> {
-    const res = await fetch("http://localhost:8000/me", { credentials: "include" });
-    if (res.ok) return res.json();
-    return null;
-}
+    if (!response.ok) throw new Error("zkLogin failed");
+    return response.json();
+};
