@@ -184,7 +184,7 @@ export const CreateItemPage: React.FC = () => {
     };
 
     return (
-        <div className="pt-20 min-h-screen">
+        <div className=" min-h-screen">
             {showConfirmModal && (
                 <MintConfirmationModal
                     onConfirm={handleConfirmMint}
@@ -196,7 +196,7 @@ export const CreateItemPage: React.FC = () => {
             )}
 
             <div className="max-w-screen-lg mx-auto px-6 py-12">
-                <BackButton />
+               
                 <h1 className="text-4xl font-bold mb-8 text-primary">Create New Item</h1>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
