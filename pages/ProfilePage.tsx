@@ -1,94 +1,169 @@
-import React from 'react';
-import { ProfileLayout } from '../components/DashboardLayout';
-import { useAppContext } from '../contexts/AppContext';
-import { AssetCard } from '../components/AssetCard';
-import { MOCK_ASSETS, MOCK_CREATED_ASSETS, MOCK_ACTIVITY_FEED } from '../constants';
-import { PortfolioTrackerPage } from './PortfolioTrackerPage';
-import { ActivityFeedItem } from '../types';
-import { BackButton } from '../components/BackButton'; // ✅ import
+import React from "react";
+import { User } from "../types";
+import {
+    AssetsIcon,
+    MintIcon,
+    PortfolioIcon,
+    SettingsIcon,
+    LogoutIcon,
+    VerifiedIcon,
+    ActivityIcon,
+} from "../components/icons/Icons";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 
-const OwnedAssetsTab: React.FC = () => (
-    <div>
-        <h1 className="text-3xl font-bold text-text-primary mb-6">My Owned Assets</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {MOCK_ASSETS.map(asset => (
-                <AssetCard key={asset.id} asset={asset} />
-            ))}
+const UserProfileCard = ({
+    user,
+    wallet,
+}: {
+    user: User;
+    wallet: { address: string; balance: number };
+}) => (
+    <div className="p-4 rounded-lg bg-surface text-center">
+        <img
+            src={user.avatarUrl}
+            alt={user.displayName}
+            className="w-24 h-24 rounded-full mx-auto border-4 border-secondary"
+        />
+        <div className="flex items-center justify-center mt-4">
+            <h2 className="text-xl font-bold text-text-primary">{user.displayName}</h2>
+            {user.isVerifiedArtist && (
+                <VerifiedIcon className="w-5 h-5 ml-2 text-primary" />
+            )}
         </div>
+        <p className="text-sm text-text-secondary mt-1">@{user.username}</p>
+        <p className="text-xs mt-4 bg-secondary/50 dark:bg-secondary/50 rounded-md p-2 font-mono break-all">
+            {wallet.address}
+        </p>
+        <p className="mt-2 text-lg font-bold text-primary">{wallet.balance} SUI</p>
     </div>
 );
 
-const CreatedAssetsTab: React.FC = () => (
-    <div>
-        <h1 className="text-3xl font-bold text-text-primary mb-6">My Created Assets</h1>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {MOCK_CREATED_ASSETS.map(asset => (
-                <AssetCard key={asset.id} asset={asset} />
-            ))}
-        </div>
-    </div>
-);
+const ProfileLayout: React.FC<{
+    user: User;
+    wallet: { address: string; balance: number };
+    disconnectWallet: () => void;
+}> = ({ user, wallet, disconnectWallet }) => {
+    const navigate = useNavigate();
 
-const ActivityFeedTab: React.FC = () => {
-    const renderActionText = (item: ActivityFeedItem) => {
-        switch (item.action) {
-            case 'minted':
-                return <>minted <span className="font-bold text-text-primary">{item.asset.name}</span></>;
-            case 'purchased':
-                return <>purchased <span className="font-bold text-text-primary">{item.asset.name}</span> for <span className="font-bold text-primary">{item.price} SUI</span></>;
-            case 'listed':
-                return <>listed <span className="font-bold text-text-primary">{item.asset.name}</span> for <span className="font-bold text-primary">{item.price} SUI</span></>;
-        }
-    };
-
-    return (
-        <div>
-            <h1 className="text-3xl font-bold text-text-primary mb-6">Activity Feed</h1>
-            <div className="space-y-4">
-                {MOCK_ACTIVITY_FEED.map(item => (
-                    <div key={item.id} className="flex items-center p-4 bg-surface rounded-lg">
-                        <img src={item.user.avatarUrl} alt={item.user.name} className="w-10 h-10 rounded-full" />
-                        <div className="ml-4 flex-grow">
-                            <p className="text-sm">
-                                <span className="font-bold text-text-primary">{item.user.name}</span> {renderActionText(item)}
-                            </p>
-                            <p className="text-xs text-text-secondary">{item.timestamp}</p>
-                        </div>
-                        <img src={item.asset.imageUrl} alt={item.asset.name} className="w-12 h-12 rounded-md" />
-                    </div>
-                ))}
+    if (!user || !wallet) {
+        return (
+            <div className="pt-20 flex items-center justify-center h-screen">
+                Redirecting...
             </div>
+        );
+    }
+
+    return (
+        <div className="flex min-h-screen pt-20">
+            {/* Sidebar */}
+            <aside className="custom-scrollbar fixed top-0 left-0 w-72 h-full bg-background border-r border-secondary pt-20 overflow-y-auto">
+                <div className="p-6 h-full flex flex-col">
+                    {/* User profile card */}
+                    <UserProfileCard user={user} wallet={wallet} />
+
+                    {/* ✅ Mint Asset Button */}
+                    
+
+                    {/* Navigation Links */}
+                    <nav className="flex-grow space-y-2 mt-6">
+                        <NavLink
+                            to="mint"
+                           
+                        >
+                            <button
+                        
+                        className="flex items-center justify-center w-full mt-6 px-4 py-3 bg-primary text-white rounded-lg text-sm font-semibold transition hover:bg-primary/80"
+                    >
+                        <MintIcon className="w-5 h-5 mr-2" />
+                        Mint Asset
+                    </button>
+                        </NavLink>
+
+                        <NavLink
+                            to="owned"
+                            className={({ isActive }) =>
+                                `flex items-center w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                    isActive
+                                        ? "bg-primary text-white"
+                                        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+                                }`
+                            }
+                        >
+                            <AssetsIcon className="w-5 h-5 mr-3" />
+                            Owned Assets
+                        </NavLink>
+
+                        <NavLink
+                            to="created"
+                            className={({ isActive }) =>
+                                `flex items-center w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                    isActive
+                                        ? "bg-primary text-white"
+                                        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+                                }`
+                            }
+                        >
+                            <MintIcon className="w-5 h-5 mr-3" />
+                            Created Assets
+                        </NavLink>
+
+                        <NavLink
+                            to="activity"
+                            className={({ isActive }) =>
+                                `flex items-center w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                    isActive
+                                        ? "bg-primary text-white"
+                                        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+                                }`
+                            }
+                        >
+                            <ActivityIcon className="w-5 h-5 mr-3" />
+                            Activity Feed
+                        </NavLink>
+
+                        <NavLink
+                            to="portfolio"
+                            className={({ isActive }) =>
+                                `flex items-center w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors ${
+                                    isActive
+                                        ? "bg-primary text-white"
+                                        : "text-text-secondary hover:bg-surface hover:text-text-primary"
+                                }`
+                            }
+                        >
+                            <PortfolioIcon className="w-5 h-5 mr-3" />
+                            Portfolio
+                        </NavLink>
+                    </nav>
+
+                    {/* Settings + Logout */}
+                    <div className="mt-auto space-y-2">
+                        <NavLink to="settings">
+                        <button
+                            
+                            className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors text-text-secondary hover:bg-surface hover:text-text-primary"
+                        >
+                            <SettingsIcon className="w-5 h-5 mr-3" />
+                            Settings
+                        </button>
+                            </NavLink>
+                        <button
+                            onClick={() => navigate("/")}
+                            className="flex items-center w-full px-4 py-3 rounded-lg text-sm font-semibold transition-colors text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                        >
+                            <LogoutIcon className="w-5 h-5 mr-3" />
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </aside>
+
+            {/* Main content */}
+            <main className="ml-72 flex-1 p-8">
+                <Outlet />
+            </main>
         </div>
     );
 };
 
-export const ProfilePage: React.FC = () => {
-    const { currentProfileTab, user, wallet, disconnectWallet } = useAppContext();
-
-
-    const renderTabContent = () => {
-        switch (currentProfileTab) {
-            case 'owned':
-                return <OwnedAssetsTab />;
-            case 'created':
-                return <CreatedAssetsTab />;
-            case 'activity':
-                return <ActivityFeedTab />;
-            case 'portfolio':
-                return <PortfolioTrackerPage />;
-            default:
-                return <OwnedAssetsTab />;
-        }
-    };
-
-    return (
-        <ProfileLayout
-            user={user}
-            wallet={wallet}
-            disconnectWallet={disconnectWallet}
-        >
-            <BackButton label="Go Back" />
-            {renderTabContent()}
-        </ProfileLayout>
-    );
-};
+export default ProfileLayout;

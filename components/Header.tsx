@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "./Button";
 import { LogoIcon, SearchIcon } from "./icons/Icons";
-import { useAppContext } from "@/contexts/AppContext";
+import { useAppContext } from "../contexts/AppContext";
 import {
   useCurrentAccount,
   useConnectWallet,
@@ -14,7 +14,7 @@ export const Header: React.FC = () => {
   const { openWalletModal } = useAppContext();
   const navigate = useNavigate();
 
-  // Wallet state from dapp-kit
+  // Wallet state
   const currentAccount = useCurrentAccount();
   const { mutate: connect } = useConnectWallet();
   const { mutate: disconnect } = useDisconnectWallet();
@@ -26,15 +26,6 @@ export const Header: React.FC = () => {
 
   const [searchTerm, setSearchTerm] = useState("");
 
-  const handleExplore = () => {
-    if (currentAccount) {
-      navigate("/marketplace");
-    } else {
-      openWalletModal();
-      // Or connect(); if you prefer dapp-kit’s modal
-    }
-  };
-
   const handleSearch = () => {
     if (searchTerm.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchTerm.trim())}`);
@@ -42,9 +33,16 @@ export const Header: React.FC = () => {
     }
   };
 
+  // 🔑 Navigate to profile once wallet is connected
+  useEffect(() => {
+    if (currentAccount) {
+      navigate("/profile");
+    }
+  }, [currentAccount, navigate]);
+
   return (
     <header className="fixed top-0 left-0 right-0 bg-background/90 backdrop-blur-xl z-50 shadow-lg">
-      <div className="max-w-screen-2xl mx-auto px-8 h-24 flex items-center border-b border-gray-700">
+      <div className="max-w-screen-2xl mx-auto px-6 lg:px-8 h-24 flex items-center justify-between border-b border-gray-700">
         {/* Left: Logo */}
         <Link to="/" className="flex items-center gap-3 shrink-0">
           <LogoIcon className="w-10 h-10 text-primary" />
@@ -55,56 +53,37 @@ export const Header: React.FC = () => {
 
         {/* Middle: Search */}
         <div className="flex-grow flex justify-center">
-          <div className="relative hidden md:flex w-full max-w-md">
-            {/* Search Bar with Icon */}
-            <div className="flex items-center bg-surface border border-secondary rounded-full pl-4 pr-4 w-full">
-              <SearchIcon className="w-5 h-5 text-text-secondary mr-3" />
+          <div className="relative hidden md:flex w-full max-w-lg">
+            {/* Search Input */}
+            <div className="relative flex items-center w-full">
+              <SearchIcon className="absolute left-4 w-5 h-5 text-text-secondary" />
               <input
                 type="text"
                 placeholder="Search assets, collections..."
-                className="bg-transparent flex-grow focus:outline-none text-text-primary py-3"
+                className="bg-surface border border-secondary rounded-full w-full pl-12 pr-4 py-3 text-text-primary focus:outline-none focus:ring-2 focus:ring-primary"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 onKeyDown={(e) => e.key === "Enter" && handleSearch()}
               />
             </div>
 
-            {/* Search Button Outside the Border */}
-            <Button
-              onClick={handleSearch}
-              className="ml-2 px-5 py-2.5 rounded-full"
-            >
+            {/* Search Button */}
+            <Button onClick={handleSearch} className="ml-3 px-6 py-3 rounded-full shadow-md">
               Search
             </Button>
           </div>
         </div>
 
-                {/* Middle: Search */}
-                <div className="flex-grow flex justify-center">
-                    <div className="relative flex items-center hidden md:flex w-full max-w-md">
-                        <SearchIcon
-                            className="absolute left-4 top-1/2 -translate-y-[25%] w-5 h-5 text-text-secondary"
-                        />
-                        <input
-                            type="text"
-                            placeholder="Search assets, collections..."
-                            className="bg-surface border border-secondary rounded-full pl-12 pr-4 py-3 w-full"
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
-                        />
-                        <Button
-                            onClick={handleSearch}
-                            className="ml-2 px-5 py-2.5 rounded-full"
-                        >
-                            Search
-                        </Button>
-                    </div>
-                </div>
+        {/* Right: Wallet + Profile Button */}
+        <div className="flex items-center gap-4 shrink-0">
+          {/* 👇 This is the new Profile Button */}
+          <Button
+            onClick={() => navigate("/profile")}
+            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-full shadow-md"
+          >
+            Go to Profile
+          </Button>
 
-
-        {/* Right: Wallet */}
-        <div className="flex items-center gap-5 shrink-0">
           {currentAccount ? (
             <div className="flex items-center gap-4 bg-surface px-4 py-2 rounded-full shadow-md">
               <div className="flex flex-col text-left">
@@ -124,10 +103,7 @@ export const Header: React.FC = () => {
               </Button>
             </div>
           ) : (
-            <Button
-              onClick={openWalletModal}
-              className="px-6 py-3 rounded-full shadow-md"
-            >
+            <Button onClick={openWalletModal} className="px-6 py-3 rounded-full shadow-md">
               Connect Wallet
             </Button>
           )}
