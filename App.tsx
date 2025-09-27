@@ -24,6 +24,7 @@ import CreatedAssetsTab from "./pages/ProfileTabs/CreatedAssetsTab";
 import ActivityFeedTab from "./pages/ProfileTabs/ActivityFeedTab";
 
 import "@mysten/dapp-kit/dist/index.css";
+import ProfileSetUp from "@/components/ProfileSetUp.tsx";
 
 const queryClient = new QueryClient();
 
@@ -63,6 +64,7 @@ function App() {
                             <Routes>
                                 <Route path="/" element={<HomePage />} />
                                 <Route path="/marketplace" element={<MarketplacePage />} />
+
                                 
 
                                 {/* ✅ Profile now receives mock props */}
@@ -86,6 +88,11 @@ function App() {
                                 </Route>
 
                                 
+
+                                <Route path="/mint" element={<CreateItemPage />} />
+                                <Route path="/profile" element={<ProfilePage />} />
+                                <Route path="/create-profile" element={<ProfileSetUp />} />
+                                <Route path="/settings" element={<SettingsPage />} />
                                 <Route path="/clubs" element={<ClubsListPage />} />
                                 <Route path="/clubs/:id" element={<ClubDetailPage />} />
                                 <Route path="/asset/:id" element={<AssetDetailPage />} />

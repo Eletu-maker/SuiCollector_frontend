@@ -42,12 +42,15 @@ export interface Wallet {
 }
 
 export interface User {
-  username: string;
-  displayName: string;
-  bio: string;
-  avatarUrl: string;
-  email: string;
-  isVerifiedArtist: boolean;
+    name: string;
+    email: string;
+    username: string;
+    walletAddress: string;
+    profession: string;
+    bio: string;
+    socialTwitter: string;
+    socialDiscord: string;
+    socialWebsite: string;
 }
 
 export interface Transaction {

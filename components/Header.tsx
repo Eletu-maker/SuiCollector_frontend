@@ -9,13 +9,25 @@ import {
     useWallets,
 } from "@mysten/dapp-kit";
 import { Link, useNavigate } from "react-router-dom";
-import { loginWithZk, startZkLogin } from "@/services/authService";
 
 interface User {
     name: string;
     email: string;
-    avatar?: string;
+    username: string;
+    walletAddress: string;
+    profession: string,
+    bio: string,
+    socialTwitter: string,
+    socialDiscord: string,
+    socialWebsite: string,
 }
+
+// interface ApiResponse {
+//     exists: boolean;
+//     user?: User;
+//     message: string;
+//     walletAddress: string;
+// }
 
 export const Header: React.FC = () => {
 
@@ -132,43 +144,73 @@ export const Header: React.FC = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [user, setUser] = useState<User | null>(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [isCheckingUser, setIsCheckingUser] = useState(false);
 
     const currentWallet = wallets.find((w) =>
         w.accounts.some((acc) => acc.address === currentAccount?.address)
     );
 
-    // Check for existing zkLogin session on component mount
-    React.useEffect(() => {
-        const checkExistingZkLogin = async () => {
-            const idToken = window.localStorage.getItem("zk_id_token");
-            if (idToken && currentAccount) {
-                setIsLoading(true);
-                try {
-                    const data = await loginWithZk(idToken);
-                    setUser(data.user);
+    // Check if user exists in backend when wallet connects
+    useEffect(() => {
+        const checkUserExists = async () => {
+            if (currentAccount?.address) {
+                setIsCheckingUser(true);
 
-                    // 👇 redirect to profile after successful login
+                // Save wallet address to localStorage
+                localStorage.setItem("walletAddress", currentAccount.address);
+                const walletAddress = currentAccount.address;
+
+                try {
+                    // Call your backend API to check if user exists
+                    console.log(walletAddress);
+                    const response = await fetch(`https://sui-collect.onrender.com/users/verify-wallet`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ walletAddress })
+                    });
+                    const data = await response.json();
+                    console.log(data)
+
+                    if (data.exists && data.user) {
+                        setUser(data.user);
+                        // User exists, navigate to dashboard
+                        navigate("/profile");
+                    } else {
+                        setUser(null);
+                        // User doesn't exist, navigate to profile
+                        console.log("user doesnt exist")
+                        navigate("/create-profile");
+                    }
+                } catch (error) {
+                    console.error("Error checking user:", error);
+                    // If API fails, navigate to profile page
                     navigate("/profile");
-                } catch (err) {
-                    console.error("zkLogin failed:", err);
-                    window.localStorage.removeItem("zk_id_token");
                 } finally {
-                    setIsLoading(false);
+                    setIsCheckingUser(false);
                 }
             }
         };
 
-        checkExistingZkLogin();
-    }, [currentAccount, navigate]);
+        checkUserExists();
+    }, [currentAccount?.address, navigate]);
 
-
-    const handleExplore = () => {
-        if (currentAccount) {
-            navigate("/marketplace");
-        } else {
-            openWalletModal();
+    // Check for existing wallet connection on component mount
+    useEffect(() => {
+        const savedAddress = localStorage.getItem("walletAddress");
+        if (savedAddress && !currentAccount) {
+            // If we have a saved address but no current account,
+            // the user might need to reconnect their wallet
+            console.log("Found saved wallet address:", savedAddress);
         }
-    };
+    }, [currentAccount]);
+
+    // const handleExplore = () => {
+    //     if (currentAccount) {
+    //         navigate("/marketplace");
+    //     } else {
+    //         openWalletModal();
+    //     }
+    // };
 
     const handleSearch = () => {
         if (searchTerm.trim()) {
@@ -190,32 +232,13 @@ export const Header: React.FC = () => {
         }
     };
 
-    const handleZkLogin = async () => {
-        try {
-            setIsLoading(true);
-            // Start zkLogin flow - this should redirect to OAuth provider
-            await startZkLogin();
-        } catch (err) {
-            console.error("zkLogin initiation failed:", err);
-            setIsLoading(false);
-        }
-    };
-
-    const handleConnectWithZk = async () => {
-        // First connect wallet, then initiate zkLogin
-        await handleWalletConnect();
-        // Give a small delay for wallet connection to establish
-        setTimeout(() => {
-            handleZkLogin();
-        }, 1000);
-    };
-
     const handleDisconnect = () => {
         // Clear all auth data
-        window.localStorage.removeItem("zk_id_token");
-        window.localStorage.removeItem("zk_login_state");
+        localStorage.removeItem("walletAddress");
         setUser(null);
         disconnect();
+        // Navigate to home after disconnect
+        navigate("/");
     };
 
     const getDisplayName = () => {
@@ -243,25 +266,24 @@ export const Header: React.FC = () => {
     return (
         <header className="fixed top-0 left-0 right-0 bg-background/90 backdrop-blur-xl z-50 shadow-lg">
             <div className="max-w-screen-2xl mx-auto px-8 h-24 flex items-center border-b border-gray-700">
-                {/* Left: Logo */}
+
                 <Link to="/" className="flex items-center gap-3 shrink-0">
-                    <LogoIcon className="w-10 h-10 text-primary" />
+                    <LogoIcon className="w-10 h-10 text-primary"/>
                     <span className="text-2xl font-extrabold text-text-primary">
                         SuiCollect
                     </span>
                 </Link>
 
-                {/* Middle: Search */}
                 <div className="flex-grow flex justify-center">
                     <div className="relative flex items-center hidden md:flex w-full max-w-md">
-                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-[25%] w-5 h-5 text-text-secondary" />
+                        <SearchIcon className="absolute left-4 top-1/2 -translate-y-[25%] w-5 h-5 text-text-secondary"/>
                         <input
                             type="text"
                             placeholder="Search assets, collections..."
                             className="bg-surface border border-secondary rounded-full pl-12 pr-4 py-3 w-full"
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            onKeyDown={(e) => e.key === "Enter" && handleSearch()}
+                            onKeyDown={(e) => e.key === 'Enter' && handleSearch()}
                         />
                         <Button
                             onClick={handleSearch}
@@ -272,7 +294,7 @@ export const Header: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Right: Wallet + Identity */}
+
                 <div className="flex items-center gap-5 shrink-0">
                     {currentAccount ? (
                         <div className="flex items-center gap-4 bg-surface px-4 py-2 rounded-full shadow-md">
@@ -288,21 +310,27 @@ export const Header: React.FC = () => {
                             {/* User Info */}
                             <div className="flex flex-col text-left">
                                 <span className="text-sm font-semibold text-text-primary">
-                                    {isLoading ? "Loading..." : getDisplayName()}
+                                    {isCheckingUser ? "Checking..." : getDisplayName()}
                                 </span>
                                 <span className="text-xs text-text-secondary">
                                     {getDisplayEmail()}
                                 </span>
                             </div>
 
-                            {/* Additional zkLogin button if wallet connected but no zkLogin */}
-                            {!user && (
+                            {/* Navigation button based on user status */}
+                            {user ? (
                                 <Button
-                                    onClick={handleZkLogin}
-                                    className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full"
-                                    disabled={isLoading}
+                                    onClick={() => navigate("/dashboard")}
+                                    className="px-3 py-1 text-xs bg-green-500 hover:bg-green-600 text-white rounded-full"
                                 >
-                                    {isLoading ? "..." : "Add Identity"}
+                                    Dashboard
+                                </Button>
+                            ) : (
+                                <Button
+                                    onClick={() => navigate("/profile")}
+                                    className="px-3 py-1 text-xs bg-blue-500 hover:bg-blue-600 text-white rounded-full"
+                                >
+                                    Complete Profile
                                 </Button>
                             )}
 
@@ -310,7 +338,7 @@ export const Header: React.FC = () => {
                             <Button
                                 onClick={handleDisconnect}
                                 className="px-3 py-1 text-xs bg-red-500 hover:bg-red-600 text-white rounded-full"
-                                disabled={isLoading}
+                                disabled={isCheckingUser}
                             >
                                 Disconnect
                             </Button>
@@ -321,15 +349,9 @@ export const Header: React.FC = () => {
                                 onClick={handleWalletConnect}
                                 className="px-6 py-3 rounded-full shadow-md border border-primary"
                                 variant="outline"
-                            >
-                                Connect Wallet
-                            </Button>
-                            <Button
-                                onClick={handleConnectWithZk}
-                                className="px-6 py-3 rounded-full shadow-md"
                                 disabled={isLoading}
                             >
-                                {isLoading ? "Connecting..." : "zkLogin"}
+                                {isLoading ? "Connecting..." : "Connect Wallet"}
                             </Button>
                         </div>
                     )}

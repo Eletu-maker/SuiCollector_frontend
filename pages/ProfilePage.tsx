@@ -79,6 +79,10 @@ const ProfileLayout: React.FC<{
                     </button>
                         </NavLink>
 
+    console.log(user);
+    // console.log(wallet)
+
+
                         <NavLink
                             to="owned"
                             className={({ isActive }) =>
