@@ -65,6 +65,9 @@ const ActivityFeedTab: React.FC = () => {
 export const ProfilePage: React.FC = () => {
     const { currentProfileTab, user, wallet, disconnectWallet } = useAppContext();
 
+    console.log(user);
+    // console.log(wallet)
+
 
     const renderTabContent = () => {
         switch (currentProfileTab) {

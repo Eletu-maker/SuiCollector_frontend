@@ -18,6 +18,7 @@ import { ClubDetailPage } from "./pages/ClubDetailPage";
 import { AssetDetailPage } from "./pages/AssetDetailPage";
 import { EditProfilePage } from "./pages/EditProfilePage";
 import "@mysten/dapp-kit/dist/index.css";
+import ProfileSetUp from "@/components/ProfileSetUp.tsx";
 
 // Create a query client for React Query
 const queryClient = new QueryClient();
@@ -43,6 +44,7 @@ function App() {
                                 <Route path="/marketplace" element={<MarketplacePage />} />
                                 <Route path="/mint" element={<CreateItemPage />} />
                                 <Route path="/profile" element={<ProfilePage />} />
+                                <Route path="/create-profile" element={<ProfileSetUp />} />
                                 <Route path="/settings" element={<SettingsPage />} />
                                 <Route path="/clubs" element={<ClubsListPage />} />
                                 <Route path="/clubs/:id" element={<ClubDetailPage />} />
